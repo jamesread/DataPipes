@@ -1,6 +1,6 @@
 FROM registry.fedoraproject.org/fedora-minimal:40
 
-LABEL org.opencontainers.image.source https://github.com/jamesread/data-cleaner
+LABEL org.opencontainers.image.source https://github.com/jamesread/DataPipes
 LABEL org.opencontainers.image.authors James Read
 LABEL org.opencontainers.image.title DataPipes
 
