@@ -1,2 +1,2 @@
 default:
-	go build -o data-cleaner
+	go build -o DataPipes

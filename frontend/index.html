@@ -1,114 +1,13 @@
 <!DOCTYPE html>
 
 <head>
-	<title>data-cleaner</title>
-	<link rel="stylesheet" href="style.css" />
-
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>DataPipes</title>
 	<link rel = "shortcut icon" href = "logo.png" type = "image/png" />
 </head>
 
 <body>
-	<header>
-		<div class = "logo-and-title">
-			<img src = "logo.png" alt = "data-cleaner logo" class = "logo" />
-			<h1>data-cleaner</h1>
-		</div>
-
-		<nav>
-			<ul>
-				<li><a href = "/">Home</a></li>
-			</ul>
-		</nav>
-	</header>
-
-	<main>
-		<div id = "issuesList">
-		</div>
-
-		<section id = "importFileList">
-			<h2>Extract / Import</h2>
-			<h3>File List</h3>
-			<p>
-				These are the files that have been imported.
-			</p>
-			<table id = "sourceFiles" class = "hover datatable">
-				<thead>
-					<tr>
-						<th>Filename</th>
-						<th>Lines</th>
-					</tr>
-				</thead>
-				<tbody>
-					<!-- File entries will be populated here -->
-				</tbody>
-			</table>
-
-			<h3>Stats</h3>
-
-			<div class = "grid-boxed">
-				<div class = "stat-display">
-					<span class = "subtle">Total lines</span>
-					<span class = "stat" id = "totalLines">?</span>
-				</div>
-				<div class = "stat-display">
-					<span class = "subtle">Total files</span>
-					<span class = "stat" id = "totalFiles">?</span>
-				</div>
-			</div>
-
-			<h3>Export</h3>
-			<p>You can download a CSV file of the imported data here;</p>
-			<a href = "/api/Export" class = "button good">Download CSV</a>
-		</section>
-
-		<section>
-			<h2>Transform</h2>
-			<p>Transformations are applied automatically.</p>
-			<p id = "transformStatus"></p>
-		</section>
-
-		<section id = "loadJob">
-			<h2>Load</h2>
-			<p>To start the load job, click the button below.</p>
-		
-			<button id = "loadJobButton" class = "good" disabled>Load</button>
-		</section>
-	</main>
-
-
-	<footer>
-		<span>
-			<a href = "https://github.com/jamesread/data-cleaner" target = "_blank" rel = "noopener noreferrer">
-				Data Cleaner on GitHub
-			</a>
-	</footer>
-
-	<script src = "main.js" type = "module">
-		main();
-	</script>
-
-	<template id = "issueTemplate">
-		<section>
-			<h2 class = "description">Details</h2>
-
-			<table class = "detailsTable">
-			</table>
-
-			<h3>Current Location</h3>
-			<table>
-				<tr>
-					<td class = "uneditable">
-						Last Filename:
-					</td>
-					<td>
-						<span class = "lastFilename">?</span> : <td><span class = "lastLineNumber">?</span>
-					</td>
-				</tr>
-				<tr>
-					<td class = "uneditable">Current Filename:</td>
-					<td><span class = "filename">?</span> : <td><span class = "lineNumber">?</span></td>
-				</tr>
-			</table>
-		</section>
-	</template>
+	<div id = "app"></div>
+	<script src = "main.js" type = "module"></script>
 </body>

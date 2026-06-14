@@ -1,21 +1,27 @@
 package api
 
 import (
+	"context"
+	"database/sql"
+	"fmt"
+	"strings"
+
 	pb "github.com/jamesread/data-cleaner/gen/data_cleaner/api/v1"
 	"github.com/jamesread/data-cleaner/internal/config"
-	"fmt"
-	log "github.com/sirupsen/logrus"
-	"database/sql"
 	_ "github.com/go-sql-driver/mysql" // MySQL driver
+	log "github.com/sirupsen/logrus"
 )
+
+type RowLoadReporter func(rowNum int, row DataRow, err error) error
 
 type Connector interface {
 	Connect() error
-	Load(dataRows []DataRow, columnMap map[int]string) error
+	Load(dataRows []DataRow, columns []string, report RowLoadReporter) error
 }
 
 type MySQLConnector struct {
 	Properties map[string]string
+	truncate   bool
 
 	conn *sql.DB
 }
@@ -32,108 +38,118 @@ func (c *MySQLConnector) Connect() error {
 	return err
 }
 
-func (c *MySQLConnector) Load(dataRows []DataRow, columnMap map[int]string) error {
+func (c *MySQLConnector) Load(dataRows []DataRow, columns []string, report RowLoadReporter) error {
 	tableName := c.Properties["table"]
-	stmt, err := c.conn.Prepare("TRUNCATE TABLE " + tableName)
-
-	if err != nil {
-		return fmt.Errorf("failed to prepare truncate statement for table %s: %v", tableName, err)
+	if c.truncate {
+		if err := c.truncateTable(tableName); err != nil {
+			return err
+		}
 	}
 
-	_, err = stmt.Exec()
-
-	if err != nil {
-		log.Errorf("Failed to truncate table %s: %v", c.Properties["table"], err)
+	if len(columns) == 0 {
+		return fmt.Errorf("no load columns defined")
 	}
 
-	if err != nil {
-		return fmt.Errorf("failed to truncate table %s: %v", c.Properties["table"], err)
-	}
+	insertSQL := buildInsertSQL(tableName, columns)
+	log.Infof("Executing SQL: %v", insertSQL)
 
-	stmt, err = c.conn.Prepare(prepareStatement(columnMap, c.Properties["table"]))
-
+	stmt, err := c.conn.Prepare(insertSQL)
 	if err != nil {
 		log.Errorf("Failed to prepare statement: %v", err)
 		return err
 	}
 
+	var firstErr error
 	for i, row := range dataRows {
-		_, err = stmt.Exec(
-			row.Get("date"),
-			row.Get("description"),
-			row.Get("category"),
-			row.Get("value"),
-			row.Get("balance"),
-		)
-
-		log.Infof("Executing row %d: %v", i, row.ToSlice())
+		args := rowExecArgs(row, columns)
+		_, err = stmt.Exec(args...)
+		if report != nil {
+			if repErr := report(i+1, row, err); repErr != nil {
+				return repErr
+			}
+		}
+		if err != nil {
+			log.Errorf("Failed to execute row %d: %v", i+1, err)
+			if firstErr == nil {
+				firstErr = err
+			}
+			continue
+		}
+		log.Infof("Loaded row %d", i+1)
 	}
 
-	if err != nil {
-		log.Errorf("Failed to execute statement: %v", err)
-		return err
-	}
-
+	_ = firstErr
 	return nil
 }
 
-func prepareStatement(columnMap map[int]string, tableName string) string {
-	sql := fmt.Sprintf("INSERT INTO %v (", tableName)
-
-	for i := 0; i < len(columnMap); i++ {
-		sql += columnMap[i]
-
-		if i < len(columnMap)-1 {
-			sql += ", "
-		}
+func (c *MySQLConnector) truncateTable(tableName string) error {
+	stmt, err := c.conn.Prepare("TRUNCATE TABLE " + tableName)
+	if err != nil {
+		return fmt.Errorf("failed to prepare truncate statement for table %s: %v", tableName, err)
 	}
-
-	sql += ") VALUES (?, ?, ?, ?, ?)"
-	
-	log.Infof("Executing SQL: %v", sql)
-
-	return sql
+	_, err = stmt.Exec()
+	if err != nil {
+		return fmt.Errorf("failed to truncate table %s: %v", tableName, err)
+	}
+	log.Infof("Truncated table %s before load", tableName)
+	return nil
 }
 
-
-func (api *EtlApi) Load() *pb.LoadResponse {
-	res := &pb.LoadResponse{
-	}
-
-	ldconfig := config.GetConfig().Load
-
-	connector := initConnector(ldconfig.Destination, config.GetConfig())
-	err := connector.Connect()
-
-	if err != nil {
-		log.Errorf("Failed to connect to destination: %v", err)
-		return res
-	}
-
-	err = connector.Load(api.Transform(), ldconfig.ColumnMap)
-
-	if err != nil {
-		log.Errorf("Failed to load data: %v", err)
-	}
-
-	return res;
+func buildInsertSQL(tableName string, columns []string) string {
+	placeholders := strings.TrimSuffix(strings.Repeat("?, ", len(columns)), ", ")
+	return fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s)", tableName, strings.Join(columns, ", "), placeholders)
 }
 
-func initConnector(connectorName string, cfg *config.Config) Connector {
-	props := cfg.Connections[connectorName]
+func rowExecArgs(row DataRow, columns []string) []any {
+	args := make([]any, len(columns))
+	for i, col := range columns {
+		args[i] = row.Get(col)
+	}
+	return args
+}
+
+func (api *EtlApi) Load(jobID string) *pb.LoadResponse {
+	res := &pb.LoadResponse{}
+	if jobID == "" {
+		jobID = config.DefaultJobID
+	}
+
+	log.Infof("Full extract before load for job %q", jobID)
+	api.extractJob(jobID, 0, 0)
+
+	if _, _, err := api.loadExtractedWithProgress(context.Background(), jobID, nil); err != nil {
+		log.Errorf("Failed to load data for job %q: %v", jobID, err)
+	}
+
+	return res
+}
+
+func initConnector(conn *config.Connection) Connector {
+	if conn == nil {
+		return nil
+	}
+	props := conn.Properties()
 
 	switch props["type"] {
-	case "mysql":
-		return NewMySQLConnector(props)
+	case config.ConnectionTypeMySQL:
+		return NewMySQLConnector(conn)
+	case config.ConnectionTypeFireflyIII:
+		return NewFireflyIIIConnector(conn)
+	case config.ConnectionTypeDownloadCSV:
+		return nil
 	default:
-		 log.Warnf("Unknown connector type: %s", props["type"])
-		 return nil
+		log.Warnf("Unknown connector type: %s", props["type"])
+		return nil
 	}
 }
 
-func NewMySQLConnector(props map[string]string) *MySQLConnector {
+func NewMySQLConnector(conn *config.Connection) *MySQLConnector {
 	return &MySQLConnector{
-		Properties: props,
+		Properties: conn.Properties(),
+		truncate:   conn != nil && conn.Truncate,
 	}
 }
 
+func isDownloadCSVLoad(conn *config.Connection) bool {
+	return conn != nil && conn.Type == config.ConnectionTypeDownloadCSV
+}

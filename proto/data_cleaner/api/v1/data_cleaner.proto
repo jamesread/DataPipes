@@ -4,7 +4,105 @@ package data_cleaner.api.v1;
 
 option go_package = "github.com/jamesread/data-cleaner/gen/data_cleaner/api/v1;dcapiv1";
 
+message ListConnectionsRequest {
+}
+
+message ConnectionSummary {
+  string id = 1;
+  string type = 2;
+  string import_directory = 3;
+  string host = 4;
+  string port = 5;
+  string user = 6;
+  string database = 7;
+  string table = 8;
+  bool health_ok = 9;
+  string health_message = 10;
+}
+
+message ListConnectionsResponse {
+  repeated ConnectionSummary connections = 1;
+  string config_path = 2;
+  string config_error = 3;
+}
+
+message GetConnectionRequest {
+  string id = 1;
+}
+
+message GetConnectionResponse {
+  ConnectionSummary connection = 1;
+  string config_path = 2;
+  string config_error = 3;
+  string error = 4;
+}
+
+message ListJobsRequest {
+}
+
+message JobSummary {
+  string id = 1;
+  string extract_connection = 5;
+  string import_directory = 2;
+  string load_connection = 6;
+  bool load_configured = 4;
+  repeated Transformation transformations = 7;
+}
+
+message ListJobsResponse {
+  repeated JobSummary jobs = 1;
+  string config_path = 2;
+  string config_error = 3;
+}
+
 message ImportRequest {
+  string job_id = 1;
+}
+
+message PreviewRequest {
+  string job_id = 1;
+  // Max CSV rows to extract for preview. Default 10 when unset or zero.
+  int32 row_limit = 2;
+  // Run transformations through this ordinal (inclusive). Zero means all steps.
+  int32 step_ordinal = 3;
+}
+
+// Maps a pipeline column name to the INSERT column name (rename_column).
+message ColumnMapEntry {
+  string source_column = 1;
+  string load_column = 2;
+}
+
+// Maps a logical extract field to a zero-based CSV column index.
+message ExtractColumnEntry {
+  string field_name = 1;
+  int32 column_index = 2;
+}
+
+message ImportedLinePreview {
+  // One cell per PreviewResponse.column_map entry (load column order).
+  // When column_map is empty, cells follow the extracted source column order.
+  repeated string cells = 1;
+  string source_filename = 2;
+  int64 source_line_number = 3;
+}
+
+message PreviewResponse {
+  repeated Issue issues = 1;
+  string completed_date = 2;
+  int64 total_lines = 3;
+  repeated SourceFile source_files = 4;
+  repeated Transformation transformations = 5;
+  repeated ColumnMapEntry column_map = 6;
+  repeated ImportedLinePreview preview_rows = 7;
+  string job_id = 8;
+  int32 row_limit = 9;
+  bool truncated = 10;
+  repeated ExtractColumnEntry extract_columns = 11;
+  // Raw extracted rows before transformations (first 10).
+  repeated ImportedLinePreview extract_preview_rows = 12;
+  // Transformation step applied to preview_rows. Zero when all steps ran.
+  int32 applied_step_ordinal = 13;
 }
 
 message ImportResponse {
@@ -13,11 +111,18 @@ message ImportResponse {
   int64 total_lines = 3;
   repeated SourceFile source_files = 4;
   repeated Transformation transformations = 5;
+  repeated ColumnMapEntry column_map = 6;
+  repeated ImportedLinePreview import_preview = 7;
+  string job_id = 8;
+  repeated ExtractColumnEntry extract_columns = 9;
+  repeated ImportedLinePreview extract_preview_rows = 10;
 }
 
 message Transformation {
   string name = 1;
   string description = 2;
+  // Application order for this transformation step (1-based).
+  int32 ordinal = 3;
 }
 
 message SourceFile {
@@ -59,13 +164,81 @@ message ReloadRequest {}
 message ReloadResponse {}
 
 message LoadRequest {
+  string job_id = 1;
 }
 
 message LoadResponse {
 }
 
+message LoadStat {
+  string key = 1;
+  string value = 2;
+}
+
+// Streamed while loading rows to the configured destination.
+message LoadProgress {
+  // started | row | complete | failed
+  string phase = 1;
+  int32 row_number = 2;
+  int32 total_rows = 3;
+  int32 succeeded = 4;
+  int32 failed = 5;
+  bool row_success = 6;
+  string error = 7;
+  repeated LoadStat stats = 8;
+  string message = 9;
+}
+
+message FullRunRequest {
+  string job_id = 1;
+}
+
+message FullRunResponse {
+  PreviewResponse preview = 1;
+  bool load_attempted = 2;
+  bool load_succeeded = 3;
+  string load_error = 4;
+}
+
+message ListTransformationTypesRequest {
+}
+
+message TransformationType {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string yaml_example = 4;
+}
+
+message ListTransformationTypesResponse {
+  repeated TransformationType types = 1;
+}
+
+message InitRequest {
+}
+
+message InitResponse {
+  string version = 1;
+  bool ok = 2;
+  string config_path = 3;
+  repeated string errors = 4;
+}
 
 service DataCleanerService {
+	rpc Init(InitRequest) returns (InitResponse) {}
+
+	rpc ListJobs(ListJobsRequest) returns (ListJobsResponse) {}
+
+	rpc ListConnections(ListConnectionsRequest) returns (ListConnectionsResponse) {}
+
+	rpc ListTransformationTypes(ListTransformationTypesRequest) returns (ListTransformationTypesResponse) {}
+
+	rpc GetConnection(GetConnectionRequest) returns (GetConnectionResponse) {}
+
+	rpc Preview(PreviewRequest) returns (PreviewResponse) {}
+
+	rpc FullRun(FullRunRequest) returns (FullRunResponse) {}
+
 	rpc Import(ImportRequest) returns (ImportResponse) {}
 
     rpc Export(ExportRequest) returns (ExportResponse) {}
@@ -73,4 +246,6 @@ service DataCleanerService {
     rpc Reload(ReloadRequest) returns (ReloadResponse) {}
     
     rpc Load(LoadRequest) returns (LoadResponse) {}
+
+    rpc StreamLoad(LoadRequest) returns (stream LoadProgress) {}
 }

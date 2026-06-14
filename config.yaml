@@ -1,0 +1,78 @@
+# Load with: DATAPIPES_CONFIG=/path/to/config.yaml
+network:
+  bindproxy: ":8085"
+
+# Connections define extract sources (type: csv) and load destinations (type: mysql, firefly_iii, or download_csv).
+#
+# connections:
+#   statements:
+#     type: csv
+#     import_directory: /opt/import
+#     columns:
+#       date: 0
+#       description: 2
+#       value: 3
+#       balance: 4
+#       value_alt: -1
+#   mysql-dw:
+#     type: mysql
+#     host: mysql
+#     port: 3306
+#     user: user
+#     pass: password
+#     database: dw
+#     table: transactions
+#     truncate: true
+#   firefly:
+#     type: firefly_iii
+#     url: https://firefly.example.com
+#     token: your-personal-access-token
+#     source_account: "Main checking"
+#     transaction_type: type   # pipeline column for hints (TFR → transfer); sign used otherwise
+#     apply_rules: true
+#     default_expense_account: Unidentified
+#     default_transfer_account: Savings   # optional preference for TFR rows without a destination
+#     load_columns:
+#       date: transaction_date
+#       amount: amount
+#       description: memo
+#       destination_name: category
+#       category_name: category
+#
+# jobs:
+#   bank-import:
+#     extract: statements
+#     load: firefly
+#     # or: load: mysql-dw
+#     transform:
+#       - replacements:
+#           source_column: description
+#           target_column: category
+#           exact: {}
+#           regex: {}
+#       - add_category:
+#           source_column: description
+#           target_column: category
+#           from_file: categories.yaml
+#           values:
+#             "SOME MERCHANT": Groceries
+#       - date_normalize:
+#           column: date
+#       - date_to_incremental:
+#           column: date
+#       - rolling_total:
+#           value_column: value
+#           balance_column: balance
+#           tolerance: 0.001
+#       - drop_column:
+#           - internal_id
+#       - rename_column:
+#           date: transaction_date
+#           description: memo
+#           value: amount
+#           balance: balance
+#       - append_hash:
+#           column: description
+#
+# Legacy single-job config (shown as job "default") — top-level extract/transform/load still works.
+# transform is also accepted as a mapping; it is converted to a pipeline in legacy order.

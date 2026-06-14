@@ -5,10 +5,10 @@
 version: 2
 
 builds:
-  - id: data-cleaner
+  - id: DataPipes
     dir: service
     main: main.go
-    binary: data-cleaner
+    binary: DataPipes
     env: [CGO_ENABLED=0]
     goos: [linux]
     goarch: [amd64, arm64]
@@ -20,7 +20,7 @@ builds:
         -X 'github.com/jamesread/data-cleaner/internal/buildinfo.Version={{.Version}}'
 
 archives:
-  - ids: [data-cleaner]
+  - ids: [DataPipes]
     formats:
       - "tar.gz"
     wrap_in_directory: true
@@ -33,7 +33,7 @@ archives:
 dockers:
   - dockerfile: Dockerfile
     image_templates:
-      - ghcr.io/jamesread/data-cleaner:{{ .Tag }}-arm64
+      - ghcr.io/jamesread/datapipes:{{ .Tag }}-arm64
     goarch: arm64
     use: buildx
     build_flag_templates:
@@ -46,7 +46,7 @@ dockers:
 
   - dockerfile: Dockerfile
     image_templates:
-      - ghcr.io/jamesread/data-cleaner:{{ .Tag }}-amd64
+      - ghcr.io/jamesread/datapipes:{{ .Tag }}-amd64
     goarch: amd64
     use: buildx
     build_flag_templates:
@@ -58,15 +58,15 @@ dockers:
       - frontend/dist
 
 docker_manifests:
-  - name_template: ghcr.io/jamesread/data-cleaner:{{ .Version }}
+  - name_template: ghcr.io/jamesread/datapipes:{{ .Version }}
     image_templates:
-      - ghcr.io/jamesread/data-cleaner:{{ .Version }}-amd64
-      - ghcr.io/jamesread/data-cleaner:{{ .Version }}-arm64
+      - ghcr.io/jamesread/datapipes:{{ .Version }}-amd64
+      - ghcr.io/jamesread/datapipes:{{ .Version }}-arm64
 
-  - name_template: ghcr.io/jamesread/data-cleaner:latest
+  - name_template: ghcr.io/jamesread/datapipes:latest
     image_templates:
-      - ghcr.io/jamesread/data-cleaner:{{ .Version }}-amd64
-      - ghcr.io/jamesread/data-cleaner:{{ .Version }}-arm64
+      - ghcr.io/jamesread/datapipes:{{ .Version }}-amd64
+      - ghcr.io/jamesread/datapipes:{{ .Version }}-arm64
 
 changelog:
   sort: asc
@@ -90,9 +90,9 @@ changelog:
 
 release:
   footer: |
-    ## Container images ([from GitHub](https://github.com/jamesread/data-cleaner/pkgs/container/uncomplicated-alert-receiver))
+    ## Container images ([from GitHub](https://github.com/jamesread/data-cleaner/pkgs/container/datapipes))
 
-    - `docker pull ghcr.io/jamesread/data-cleaner:{{ .Version }}`
+    - `docker pull ghcr.io/jamesread/datapipes:{{ .Version }}`
 
     ## Upgrade warnings, or breaking changes
 
@@ -102,4 +102,4 @@ release:
 
     - [Ask for help and chat with others users in the Discord community](https://discord.gg/jhYWWpNJ3v)
 
-    Thanks for your interest in UAR!
+    Thanks for your interest in DataPipes!

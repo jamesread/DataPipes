@@ -5,7 +5,7 @@ import "github.com/jamesread/data-cleaner/internal/config"
 import log "github.com/sirupsen/logrus"
 
 func main() {
-	log.Infof("data-cleaner")
+	log.Infof("DataPipes")
 
 	config := config.GetConfig()
 

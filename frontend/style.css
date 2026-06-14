@@ -1,1 +1,24 @@
 @import 'femtocrank/style.css';
+
+.job-section + .job-section {
+	margin-top: 1.5rem;
+}
+
+.config-error {
+	margin-bottom: 1.5rem;
+	padding: 1rem 1.25rem;
+	border: 1px solid #c0392b;
+	border-radius: 0.5rem;
+	background: #fdecea;
+	color: #922b21;
+}
+
+.karma-good {
+	color: var(--karma-good-fg);
+	font-weight: 500;
+}
+
+.karma-bad {
+	color: var(--karma-bad-fg);
+	font-weight: 500;
+}

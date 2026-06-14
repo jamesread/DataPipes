@@ -1,4 +1,4 @@
-default: service frontend
+default: frontend service
 
 service:
 	$(MAKE) -wC service default

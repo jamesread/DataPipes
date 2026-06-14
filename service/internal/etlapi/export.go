@@ -3,27 +3,35 @@ package api
 import (
 	"bytes"
 	"encoding/csv"
+
 	"github.com/jamesread/data-cleaner/internal/config"
 	log "github.com/sirupsen/logrus"
 )
 
-type TranslationFile struct {
-	Exact map[string]string
-	Regex map[string]string
-}
+func (api *EtlApi) ExportCSV(jobID string) []byte {
+	if jobID == "" {
+		jobID = config.DefaultJobID
+	}
 
-func (api *EtlApi) Export(notNullColumns int64) []byte {
-	log.Infof("Exporting data, rows: %v", len(api.dataRows))
+	st := api.state(jobID)
+	if len(st.dataRows) == 0 {
+		api.extractJob(jobID, 0, 0)
+	}
 
-	config.ReloadConfig()
+	dataRows, columns := api.Transform(jobID)
+	log.Infof("Exporting CSV for job %q, rows: %v", jobID, len(dataRows))
 
 	buf := &bytes.Buffer{}
-
 	writer := csv.NewWriter(buf)
 
-	for _, row := range api.Transform() {
-		err := writer.Write(row.ToSlice())
+	if len(columns) > 0 {
+		if err := writer.Write(columns); err != nil {
+			log.Errorf("Error writing header to CSV: %v", err)
+		}
+	}
 
+	for _, row := range dataRows {
+		err := writer.Write(row.ToSlice(columns))
 		if err != nil {
 			log.Errorf("Error writing row to CSV: %v", err)
 			continue

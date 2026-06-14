@@ -33,6 +33,26 @@ const (
 // reflection-formatted method names, remove the leading slash and convert the remaining slash to a
 // period.
 const (
+	// DataCleanerServiceInitProcedure is the fully-qualified name of the DataCleanerService's Init RPC.
+	DataCleanerServiceInitProcedure = "/data_cleaner.api.v1.DataCleanerService/Init"
+	// DataCleanerServiceListJobsProcedure is the fully-qualified name of the DataCleanerService's
+	// ListJobs RPC.
+	DataCleanerServiceListJobsProcedure = "/data_cleaner.api.v1.DataCleanerService/ListJobs"
+	// DataCleanerServiceListConnectionsProcedure is the fully-qualified name of the
+	// DataCleanerService's ListConnections RPC.
+	DataCleanerServiceListConnectionsProcedure = "/data_cleaner.api.v1.DataCleanerService/ListConnections"
+	// DataCleanerServiceListTransformationTypesProcedure is the fully-qualified name of the
+	// DataCleanerService's ListTransformationTypes RPC.
+	DataCleanerServiceListTransformationTypesProcedure = "/data_cleaner.api.v1.DataCleanerService/ListTransformationTypes"
+	// DataCleanerServiceGetConnectionProcedure is the fully-qualified name of the DataCleanerService's
+	// GetConnection RPC.
+	DataCleanerServiceGetConnectionProcedure = "/data_cleaner.api.v1.DataCleanerService/GetConnection"
+	// DataCleanerServicePreviewProcedure is the fully-qualified name of the DataCleanerService's
+	// Preview RPC.
+	DataCleanerServicePreviewProcedure = "/data_cleaner.api.v1.DataCleanerService/Preview"
+	// DataCleanerServiceFullRunProcedure is the fully-qualified name of the DataCleanerService's
+	// FullRun RPC.
+	DataCleanerServiceFullRunProcedure = "/data_cleaner.api.v1.DataCleanerService/FullRun"
 	// DataCleanerServiceImportProcedure is the fully-qualified name of the DataCleanerService's Import
 	// RPC.
 	DataCleanerServiceImportProcedure = "/data_cleaner.api.v1.DataCleanerService/Import"
@@ -44,14 +64,25 @@ const (
 	DataCleanerServiceReloadProcedure = "/data_cleaner.api.v1.DataCleanerService/Reload"
 	// DataCleanerServiceLoadProcedure is the fully-qualified name of the DataCleanerService's Load RPC.
 	DataCleanerServiceLoadProcedure = "/data_cleaner.api.v1.DataCleanerService/Load"
+	// DataCleanerServiceStreamLoadProcedure is the fully-qualified name of the DataCleanerService's
+	// StreamLoad RPC.
+	DataCleanerServiceStreamLoadProcedure = "/data_cleaner.api.v1.DataCleanerService/StreamLoad"
 )
 
 // DataCleanerServiceClient is a client for the data_cleaner.api.v1.DataCleanerService service.
 type DataCleanerServiceClient interface {
+	Init(context.Context, *connect.Request[v1.InitRequest]) (*connect.Response[v1.InitResponse], error)
+	ListJobs(context.Context, *connect.Request[v1.ListJobsRequest]) (*connect.Response[v1.ListJobsResponse], error)
+	ListConnections(context.Context, *connect.Request[v1.ListConnectionsRequest]) (*connect.Response[v1.ListConnectionsResponse], error)
+	ListTransformationTypes(context.Context, *connect.Request[v1.ListTransformationTypesRequest]) (*connect.Response[v1.ListTransformationTypesResponse], error)
+	GetConnection(context.Context, *connect.Request[v1.GetConnectionRequest]) (*connect.Response[v1.GetConnectionResponse], error)
+	Preview(context.Context, *connect.Request[v1.PreviewRequest]) (*connect.Response[v1.PreviewResponse], error)
+	FullRun(context.Context, *connect.Request[v1.FullRunRequest]) (*connect.Response[v1.FullRunResponse], error)
 	Import(context.Context, *connect.Request[v1.ImportRequest]) (*connect.Response[v1.ImportResponse], error)
 	Export(context.Context, *connect.Request[v1.ExportRequest]) (*connect.Response[v1.ExportResponse], error)
 	Reload(context.Context, *connect.Request[v1.ReloadRequest]) (*connect.Response[v1.ReloadResponse], error)
 	Load(context.Context, *connect.Request[v1.LoadRequest]) (*connect.Response[v1.LoadResponse], error)
+	StreamLoad(context.Context, *connect.Request[v1.LoadRequest]) (*connect.ServerStreamForClient[v1.LoadProgress], error)
 }
 
 // NewDataCleanerServiceClient constructs a client for the data_cleaner.api.v1.DataCleanerService
@@ -65,6 +96,48 @@ func NewDataCleanerServiceClient(httpClient connect.HTTPClient, baseURL string, 
 	baseURL = strings.TrimRight(baseURL, "/")
 	dataCleanerServiceMethods := v1.File_data_cleaner_api_v1_data_cleaner_proto.Services().ByName("DataCleanerService").Methods()
 	return &dataCleanerServiceClient{
+		init: connect.NewClient[v1.InitRequest, v1.InitResponse](
+			httpClient,
+			baseURL+DataCleanerServiceInitProcedure,
+			connect.WithSchema(dataCleanerServiceMethods.ByName("Init")),
+			connect.WithClientOptions(opts...),
+		),
+		listJobs: connect.NewClient[v1.ListJobsRequest, v1.ListJobsResponse](
+			httpClient,
+			baseURL+DataCleanerServiceListJobsProcedure,
+			connect.WithSchema(dataCleanerServiceMethods.ByName("ListJobs")),
+			connect.WithClientOptions(opts...),
+		),
+		listConnections: connect.NewClient[v1.ListConnectionsRequest, v1.ListConnectionsResponse](
+			httpClient,
+			baseURL+DataCleanerServiceListConnectionsProcedure,
+			connect.WithSchema(dataCleanerServiceMethods.ByName("ListConnections")),
+			connect.WithClientOptions(opts...),
+		),
+		listTransformationTypes: connect.NewClient[v1.ListTransformationTypesRequest, v1.ListTransformationTypesResponse](
+			httpClient,
+			baseURL+DataCleanerServiceListTransformationTypesProcedure,
+			connect.WithSchema(dataCleanerServiceMethods.ByName("ListTransformationTypes")),
+			connect.WithClientOptions(opts...),
+		),
+		getConnection: connect.NewClient[v1.GetConnectionRequest, v1.GetConnectionResponse](
+			httpClient,
+			baseURL+DataCleanerServiceGetConnectionProcedure,
+			connect.WithSchema(dataCleanerServiceMethods.ByName("GetConnection")),
+			connect.WithClientOptions(opts...),
+		),
+		preview: connect.NewClient[v1.PreviewRequest, v1.PreviewResponse](
+			httpClient,
+			baseURL+DataCleanerServicePreviewProcedure,
+			connect.WithSchema(dataCleanerServiceMethods.ByName("Preview")),
+			connect.WithClientOptions(opts...),
+		),
+		fullRun: connect.NewClient[v1.FullRunRequest, v1.FullRunResponse](
+			httpClient,
+			baseURL+DataCleanerServiceFullRunProcedure,
+			connect.WithSchema(dataCleanerServiceMethods.ByName("FullRun")),
+			connect.WithClientOptions(opts...),
+		),
 		_import: connect.NewClient[v1.ImportRequest, v1.ImportResponse](
 			httpClient,
 			baseURL+DataCleanerServiceImportProcedure,
@@ -89,15 +162,64 @@ func NewDataCleanerServiceClient(httpClient connect.HTTPClient, baseURL string, 
 			connect.WithSchema(dataCleanerServiceMethods.ByName("Load")),
 			connect.WithClientOptions(opts...),
 		),
+		streamLoad: connect.NewClient[v1.LoadRequest, v1.LoadProgress](
+			httpClient,
+			baseURL+DataCleanerServiceStreamLoadProcedure,
+			connect.WithSchema(dataCleanerServiceMethods.ByName("StreamLoad")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // dataCleanerServiceClient implements DataCleanerServiceClient.
 type dataCleanerServiceClient struct {
-	_import *connect.Client[v1.ImportRequest, v1.ImportResponse]
-	export  *connect.Client[v1.ExportRequest, v1.ExportResponse]
-	reload  *connect.Client[v1.ReloadRequest, v1.ReloadResponse]
-	load    *connect.Client[v1.LoadRequest, v1.LoadResponse]
+	init                    *connect.Client[v1.InitRequest, v1.InitResponse]
+	listJobs                *connect.Client[v1.ListJobsRequest, v1.ListJobsResponse]
+	listConnections         *connect.Client[v1.ListConnectionsRequest, v1.ListConnectionsResponse]
+	listTransformationTypes *connect.Client[v1.ListTransformationTypesRequest, v1.ListTransformationTypesResponse]
+	getConnection           *connect.Client[v1.GetConnectionRequest, v1.GetConnectionResponse]
+	preview                 *connect.Client[v1.PreviewRequest, v1.PreviewResponse]
+	fullRun                 *connect.Client[v1.FullRunRequest, v1.FullRunResponse]
+	_import                 *connect.Client[v1.ImportRequest, v1.ImportResponse]
+	export                  *connect.Client[v1.ExportRequest, v1.ExportResponse]
+	reload                  *connect.Client[v1.ReloadRequest, v1.ReloadResponse]
+	load                    *connect.Client[v1.LoadRequest, v1.LoadResponse]
+	streamLoad              *connect.Client[v1.LoadRequest, v1.LoadProgress]
+}
+
+// Init calls data_cleaner.api.v1.DataCleanerService.Init.
+func (c *dataCleanerServiceClient) Init(ctx context.Context, req *connect.Request[v1.InitRequest]) (*connect.Response[v1.InitResponse], error) {
+	return c.init.CallUnary(ctx, req)
+}
+
+// ListJobs calls data_cleaner.api.v1.DataCleanerService.ListJobs.
+func (c *dataCleanerServiceClient) ListJobs(ctx context.Context, req *connect.Request[v1.ListJobsRequest]) (*connect.Response[v1.ListJobsResponse], error) {
+	return c.listJobs.CallUnary(ctx, req)
+}
+
+// ListConnections calls data_cleaner.api.v1.DataCleanerService.ListConnections.
+func (c *dataCleanerServiceClient) ListConnections(ctx context.Context, req *connect.Request[v1.ListConnectionsRequest]) (*connect.Response[v1.ListConnectionsResponse], error) {
+	return c.listConnections.CallUnary(ctx, req)
+}
+
+// ListTransformationTypes calls data_cleaner.api.v1.DataCleanerService.ListTransformationTypes.
+func (c *dataCleanerServiceClient) ListTransformationTypes(ctx context.Context, req *connect.Request[v1.ListTransformationTypesRequest]) (*connect.Response[v1.ListTransformationTypesResponse], error) {
+	return c.listTransformationTypes.CallUnary(ctx, req)
+}
+
+// GetConnection calls data_cleaner.api.v1.DataCleanerService.GetConnection.
+func (c *dataCleanerServiceClient) GetConnection(ctx context.Context, req *connect.Request[v1.GetConnectionRequest]) (*connect.Response[v1.GetConnectionResponse], error) {
+	return c.getConnection.CallUnary(ctx, req)
+}
+
+// Preview calls data_cleaner.api.v1.DataCleanerService.Preview.
+func (c *dataCleanerServiceClient) Preview(ctx context.Context, req *connect.Request[v1.PreviewRequest]) (*connect.Response[v1.PreviewResponse], error) {
+	return c.preview.CallUnary(ctx, req)
+}
+
+// FullRun calls data_cleaner.api.v1.DataCleanerService.FullRun.
+func (c *dataCleanerServiceClient) FullRun(ctx context.Context, req *connect.Request[v1.FullRunRequest]) (*connect.Response[v1.FullRunResponse], error) {
+	return c.fullRun.CallUnary(ctx, req)
 }
 
 // Import calls data_cleaner.api.v1.DataCleanerService.Import.
@@ -120,13 +242,26 @@ func (c *dataCleanerServiceClient) Load(ctx context.Context, req *connect.Reques
 	return c.load.CallUnary(ctx, req)
 }
 
+// StreamLoad calls data_cleaner.api.v1.DataCleanerService.StreamLoad.
+func (c *dataCleanerServiceClient) StreamLoad(ctx context.Context, req *connect.Request[v1.LoadRequest]) (*connect.ServerStreamForClient[v1.LoadProgress], error) {
+	return c.streamLoad.CallServerStream(ctx, req)
+}
+
 // DataCleanerServiceHandler is an implementation of the data_cleaner.api.v1.DataCleanerService
 // service.
 type DataCleanerServiceHandler interface {
+	Init(context.Context, *connect.Request[v1.InitRequest]) (*connect.Response[v1.InitResponse], error)
+	ListJobs(context.Context, *connect.Request[v1.ListJobsRequest]) (*connect.Response[v1.ListJobsResponse], error)
+	ListConnections(context.Context, *connect.Request[v1.ListConnectionsRequest]) (*connect.Response[v1.ListConnectionsResponse], error)
+	ListTransformationTypes(context.Context, *connect.Request[v1.ListTransformationTypesRequest]) (*connect.Response[v1.ListTransformationTypesResponse], error)
+	GetConnection(context.Context, *connect.Request[v1.GetConnectionRequest]) (*connect.Response[v1.GetConnectionResponse], error)
+	Preview(context.Context, *connect.Request[v1.PreviewRequest]) (*connect.Response[v1.PreviewResponse], error)
+	FullRun(context.Context, *connect.Request[v1.FullRunRequest]) (*connect.Response[v1.FullRunResponse], error)
 	Import(context.Context, *connect.Request[v1.ImportRequest]) (*connect.Response[v1.ImportResponse], error)
 	Export(context.Context, *connect.Request[v1.ExportRequest]) (*connect.Response[v1.ExportResponse], error)
 	Reload(context.Context, *connect.Request[v1.ReloadRequest]) (*connect.Response[v1.ReloadResponse], error)
 	Load(context.Context, *connect.Request[v1.LoadRequest]) (*connect.Response[v1.LoadResponse], error)
+	StreamLoad(context.Context, *connect.Request[v1.LoadRequest], *connect.ServerStream[v1.LoadProgress]) error
 }
 
 // NewDataCleanerServiceHandler builds an HTTP handler from the service implementation. It returns
@@ -136,6 +271,48 @@ type DataCleanerServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewDataCleanerServiceHandler(svc DataCleanerServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
 	dataCleanerServiceMethods := v1.File_data_cleaner_api_v1_data_cleaner_proto.Services().ByName("DataCleanerService").Methods()
+	dataCleanerServiceInitHandler := connect.NewUnaryHandler(
+		DataCleanerServiceInitProcedure,
+		svc.Init,
+		connect.WithSchema(dataCleanerServiceMethods.ByName("Init")),
+		connect.WithHandlerOptions(opts...),
+	)
+	dataCleanerServiceListJobsHandler := connect.NewUnaryHandler(
+		DataCleanerServiceListJobsProcedure,
+		svc.ListJobs,
+		connect.WithSchema(dataCleanerServiceMethods.ByName("ListJobs")),
+		connect.WithHandlerOptions(opts...),
+	)
+	dataCleanerServiceListConnectionsHandler := connect.NewUnaryHandler(
+		DataCleanerServiceListConnectionsProcedure,
+		svc.ListConnections,
+		connect.WithSchema(dataCleanerServiceMethods.ByName("ListConnections")),
+		connect.WithHandlerOptions(opts...),
+	)
+	dataCleanerServiceListTransformationTypesHandler := connect.NewUnaryHandler(
+		DataCleanerServiceListTransformationTypesProcedure,
+		svc.ListTransformationTypes,
+		connect.WithSchema(dataCleanerServiceMethods.ByName("ListTransformationTypes")),
+		connect.WithHandlerOptions(opts...),
+	)
+	dataCleanerServiceGetConnectionHandler := connect.NewUnaryHandler(
+		DataCleanerServiceGetConnectionProcedure,
+		svc.GetConnection,
+		connect.WithSchema(dataCleanerServiceMethods.ByName("GetConnection")),
+		connect.WithHandlerOptions(opts...),
+	)
+	dataCleanerServicePreviewHandler := connect.NewUnaryHandler(
+		DataCleanerServicePreviewProcedure,
+		svc.Preview,
+		connect.WithSchema(dataCleanerServiceMethods.ByName("Preview")),
+		connect.WithHandlerOptions(opts...),
+	)
+	dataCleanerServiceFullRunHandler := connect.NewUnaryHandler(
+		DataCleanerServiceFullRunProcedure,
+		svc.FullRun,
+		connect.WithSchema(dataCleanerServiceMethods.ByName("FullRun")),
+		connect.WithHandlerOptions(opts...),
+	)
 	dataCleanerServiceImportHandler := connect.NewUnaryHandler(
 		DataCleanerServiceImportProcedure,
 		svc.Import,
@@ -160,8 +337,28 @@ func NewDataCleanerServiceHandler(svc DataCleanerServiceHandler, opts ...connect
 		connect.WithSchema(dataCleanerServiceMethods.ByName("Load")),
 		connect.WithHandlerOptions(opts...),
 	)
+	dataCleanerServiceStreamLoadHandler := connect.NewServerStreamHandler(
+		DataCleanerServiceStreamLoadProcedure,
+		svc.StreamLoad,
+		connect.WithSchema(dataCleanerServiceMethods.ByName("StreamLoad")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/data_cleaner.api.v1.DataCleanerService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
+		case DataCleanerServiceInitProcedure:
+			dataCleanerServiceInitHandler.ServeHTTP(w, r)
+		case DataCleanerServiceListJobsProcedure:
+			dataCleanerServiceListJobsHandler.ServeHTTP(w, r)
+		case DataCleanerServiceListConnectionsProcedure:
+			dataCleanerServiceListConnectionsHandler.ServeHTTP(w, r)
+		case DataCleanerServiceListTransformationTypesProcedure:
+			dataCleanerServiceListTransformationTypesHandler.ServeHTTP(w, r)
+		case DataCleanerServiceGetConnectionProcedure:
+			dataCleanerServiceGetConnectionHandler.ServeHTTP(w, r)
+		case DataCleanerServicePreviewProcedure:
+			dataCleanerServicePreviewHandler.ServeHTTP(w, r)
+		case DataCleanerServiceFullRunProcedure:
+			dataCleanerServiceFullRunHandler.ServeHTTP(w, r)
 		case DataCleanerServiceImportProcedure:
 			dataCleanerServiceImportHandler.ServeHTTP(w, r)
 		case DataCleanerServiceExportProcedure:
@@ -170,6 +367,8 @@ func NewDataCleanerServiceHandler(svc DataCleanerServiceHandler, opts ...connect
 			dataCleanerServiceReloadHandler.ServeHTTP(w, r)
 		case DataCleanerServiceLoadProcedure:
 			dataCleanerServiceLoadHandler.ServeHTTP(w, r)
+		case DataCleanerServiceStreamLoadProcedure:
+			dataCleanerServiceStreamLoadHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -178,6 +377,34 @@ func NewDataCleanerServiceHandler(svc DataCleanerServiceHandler, opts ...connect
 
 // UnimplementedDataCleanerServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedDataCleanerServiceHandler struct{}
+
+func (UnimplementedDataCleanerServiceHandler) Init(context.Context, *connect.Request[v1.InitRequest]) (*connect.Response[v1.InitResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("data_cleaner.api.v1.DataCleanerService.Init is not implemented"))
+}
+
+func (UnimplementedDataCleanerServiceHandler) ListJobs(context.Context, *connect.Request[v1.ListJobsRequest]) (*connect.Response[v1.ListJobsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("data_cleaner.api.v1.DataCleanerService.ListJobs is not implemented"))
+}
+
+func (UnimplementedDataCleanerServiceHandler) ListConnections(context.Context, *connect.Request[v1.ListConnectionsRequest]) (*connect.Response[v1.ListConnectionsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("data_cleaner.api.v1.DataCleanerService.ListConnections is not implemented"))
+}
+
+func (UnimplementedDataCleanerServiceHandler) ListTransformationTypes(context.Context, *connect.Request[v1.ListTransformationTypesRequest]) (*connect.Response[v1.ListTransformationTypesResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("data_cleaner.api.v1.DataCleanerService.ListTransformationTypes is not implemented"))
+}
+
+func (UnimplementedDataCleanerServiceHandler) GetConnection(context.Context, *connect.Request[v1.GetConnectionRequest]) (*connect.Response[v1.GetConnectionResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("data_cleaner.api.v1.DataCleanerService.GetConnection is not implemented"))
+}
+
+func (UnimplementedDataCleanerServiceHandler) Preview(context.Context, *connect.Request[v1.PreviewRequest]) (*connect.Response[v1.PreviewResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("data_cleaner.api.v1.DataCleanerService.Preview is not implemented"))
+}
+
+func (UnimplementedDataCleanerServiceHandler) FullRun(context.Context, *connect.Request[v1.FullRunRequest]) (*connect.Response[v1.FullRunResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("data_cleaner.api.v1.DataCleanerService.FullRun is not implemented"))
+}
 
 func (UnimplementedDataCleanerServiceHandler) Import(context.Context, *connect.Request[v1.ImportRequest]) (*connect.Response[v1.ImportResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("data_cleaner.api.v1.DataCleanerService.Import is not implemented"))
@@ -193,4 +420,8 @@ func (UnimplementedDataCleanerServiceHandler) Reload(context.Context, *connect.R
 
 func (UnimplementedDataCleanerServiceHandler) Load(context.Context, *connect.Request[v1.LoadRequest]) (*connect.Response[v1.LoadResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("data_cleaner.api.v1.DataCleanerService.Load is not implemented"))
+}
+
+func (UnimplementedDataCleanerServiceHandler) StreamLoad(context.Context, *connect.Request[v1.LoadRequest], *connect.ServerStream[v1.LoadProgress]) error {
+	return connect.NewError(connect.CodeUnimplemented, errors.New("data_cleaner.api.v1.DataCleanerService.StreamLoad is not implemented"))
 }
