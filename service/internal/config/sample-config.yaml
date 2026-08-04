@@ -1,0 +1,86 @@
+# DataPipes sample configuration (built-in fallback).
+#
+# Used automatically when ~/.datapipes-config.yaml is not found.
+# To customize permanently:
+#   cp sample-config.yaml ~/.datapipes-config.yaml
+# Or point at a file:
+#   DATAPIPES_CONFIG=/path/to/config.yaml
+#
+# Docs: https://github.com/jamesread/data-cleaner
+
+network:
+  bindproxy: ":8080"
+
+csv:
+  header: true
+
+# Connections define extract sources (type: csv) and load destinations
+# (type: mysql, firefly_iii, or the implicit download_csv).
+connections:
+  sample_csv:
+    type: csv
+    import_directory: ./import
+    columns:
+      date: 0
+      description: 1
+      value: 2
+      balance: 3
+
+  # mysql-dw:
+  #   type: mysql
+  #   host: mysql
+  #   port: 3306
+  #   user: user
+  #   pass: password
+  #   database: dw
+  #   table: transactions
+  #   truncate: true
+
+  # firefly:
+  #   type: firefly_iii
+  #   url: https://firefly.example.com
+  #   token: your-personal-access-token
+  #   source_account: "Main checking"
+  #   transaction_type: type
+  #   apply_rules: true
+  #   default_expense_account: Unidentified
+  #   default_transfer_account: Savings
+  #   load_columns:
+  #     date: transaction_date
+  #     amount: amount
+  #     description: memo
+  #     destination_name: category
+  #     category_name: category
+
+jobs:
+  sample:
+    extract: sample_csv
+    load: download_csv
+    transform:
+      - date_normalize:
+          column: date
+      # - replacements:
+      #     source_column: description
+      #     target_column: category
+      #     exact: {}
+      #     regex: {}
+      # - add_category:
+      #     source_column: description
+      #     target_column: category
+      #     from_file: categories.yaml
+      #     values:
+      #       "SOME MERCHANT": Groceries
+      # - date_to_incremental:
+      #     column: date
+      # - rolling_total:
+      #     value_column: value
+      #     balance_column: balance
+      #     tolerance: 0.001
+      # - drop_column:
+      #     - internal_id
+      # - rename_column:
+      #     date: transaction_date
+      #     description: memo
+      #     value: amount
+      # - append_hash:
+      #     column: description

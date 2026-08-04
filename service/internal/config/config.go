@@ -1,6 +1,7 @@
 package config
 
 import (
+	_ "embed"
 	"fmt"
 	"os"
 	"path"
@@ -10,6 +11,11 @@ import (
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 )
+
+//go:embed sample-config.yaml
+var sampleConfigYAML []byte
+
+const sampleConfigPathLabel = "sample-config.yaml (built-in)"
 
 const (
 	DefaultJobID       = "default"
@@ -338,55 +344,64 @@ func newDefaultConfig() *Config {
 		Csv: &CsvConfig{
 			Header: true,
 		},
-		Transform: TransformPipeline{
-			{
-				Replacements: &ReplacementsConfig{
-					Exact: map[string]string{},
-					Regex: map[string]string{},
-				},
-			},
-		},
 	}
+}
+
+func configEnvPath() string {
+	for _, key := range []string{"DATAPIPES_CONFIG", "DATACLEANER_CONFIG", "DATA_CLEANER_CONFIG"} {
+		if v := strings.TrimSpace(os.Getenv(key)); v != "" {
+			return v
+		}
+	}
+	return ""
+}
+
+func homeConfigPath() string {
+	home := os.Getenv("HOME")
+	primary := path.Join(home, ".datapipes-config.yaml")
+	if _, err := os.Stat(primary); err == nil {
+		return primary
+	}
+	legacy := path.Join(home, ".datacleaner-config.yaml")
+	if _, err := os.Stat(legacy); err == nil {
+		return legacy
+	}
+	return primary
 }
 
 func ReloadConfig() *Config {
 	config = newDefaultConfig()
 	configLoadErr = nil
 
-	envconf := os.Getenv("DATAPIPES_CONFIG")
-	if envconf == "" {
-		envconf = os.Getenv("DATACLEANER_CONFIG")
-	}
-	if envconf == "" {
-		envconf = os.Getenv("DATA_CLEANER_CONFIG") // legacy
-	}
-	filename := ""
-	if envconf != "" {
-		filename = envconf
-	} else {
-		home := os.Getenv("HOME")
-		filename = path.Join(home, ".datapipes-config.yaml")
+	filename := configEnvPath()
+	useSample := false
+	if filename == "" {
+		filename = homeConfigPath()
 		if _, err := os.Stat(filename); err != nil {
-			legacy := path.Join(home, ".datacleaner-config.yaml")
-			if _, err := os.Stat(legacy); err == nil {
-				filename = legacy
-			}
+			useSample = true
 		}
 	}
-	configPath = filename
 
-	log.Infof("Loading config from %s", filename)
-
-	file, err := os.ReadFile(filename)
-	if err != nil {
-		configLoadErr = fmt.Errorf("could not read config file %s: %w", filename, err)
-		log.Warnf("Could not load config file: %v", configLoadErr)
-		return config
+	var file []byte
+	var err error
+	if useSample {
+		configPath = sampleConfigPathLabel
+		file = sampleConfigYAML
+		log.Infof("Home config not found; loading built-in sample config")
+	} else {
+		configPath = filename
+		log.Infof("Loading config from %s", filename)
+		file, err = os.ReadFile(filename)
+		if err != nil {
+			configLoadErr = fmt.Errorf("could not read config file %s: %w", filename, err)
+			log.Warnf("Could not load config file: %v", configLoadErr)
+			return config
+		}
 	}
 
 	err = yaml.UnmarshalStrict(file, &config)
 	if err != nil {
-		configLoadErr = fmt.Errorf("could not parse config file %s: %w", filename, err)
+		configLoadErr = fmt.Errorf("could not parse config file %s: %w", configPath, err)
 		config = newDefaultConfig()
 		applyNetworkOverlay(file, config)
 		log.Warnf("Could not load config file: %v", configLoadErr)

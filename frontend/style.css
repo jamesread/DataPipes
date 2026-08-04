@@ -1,4 +1,4 @@
-@import 'femtocrank/style.css';
+@import 'picocrank/styles.css';
 
 .job-section + .job-section {
 	margin-top: 1.5rem;

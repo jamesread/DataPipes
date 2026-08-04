@@ -20,32 +20,22 @@
 			>{{ fullRunLabel }}</button>
 		</template>
 
-		<table class = "hover datatable">
-			<tbody>
-				<tr>
-					<th class = "uneditable">Extract connection</th>
-					<td>
-						<router-link v-if = "job.extractConnection" :to = "connectionPath(job.extractConnection)">{{ job.extractConnection }}</router-link>
-						<span v-else>—</span>
-					</td>
-				</tr>
-				<tr>
-					<th class = "uneditable">Import directory</th>
-					<td>{{ job.importDirectory || '—' }}</td>
-				</tr>
-				<tr>
-					<th class = "uneditable">Load connection</th>
-					<td>
-						<router-link v-if = "job.loadConnection" :to = "connectionPath(job.loadConnection)">{{ job.loadConnection }}</router-link>
-						<span v-else>—</span>
-					</td>
-				</tr>
-				<tr>
-					<th class = "uneditable">Load configured</th>
-					<td>{{ job.loadConfigured ? 'Yes' : 'No' }}</td>
-				</tr>
-			</tbody>
-		</table>
+		<dl>
+			<dt>Extract connection</dt>
+			<dd>
+				<router-link v-if = "job.extractConnection" :to = "connectionPath(job.extractConnection)">{{ job.extractConnection }}</router-link>
+				<span v-else>—</span>
+			</dd>
+			<dt>Import directory</dt>
+			<dd>{{ job.importDirectory || '—' }}</dd>
+			<dt>Load connection</dt>
+			<dd>
+				<router-link v-if = "job.loadConnection" :to = "connectionPath(job.loadConnection)">{{ job.loadConnection }}</router-link>
+				<span v-else>—</span>
+			</dd>
+			<dt>Load configured</dt>
+			<dd>{{ job.loadConfigured ? 'Yes' : 'No' }}</dd>
+		</dl>
 
 		<h3>Transformations</h3>
 		<p v-if = "!job.transformations?.length" class = "subtle">No transformations configured.</p>
