@@ -1,34 +1,50 @@
 <template>
-	<Section :title = "connectionId" subtitle = "Connection details">
-		<p><router-link to = "/connections">← Back to connections</router-link></p>
-
-		<div v-if = "configError" class = "config-error" role = "alert">
-			Could not load config{{ configPath ? ' from ' + configPath : '' }}: {{ configError }}
+	<Section subtitle = "Connection details">
+		<template #title>
+			<span class = "section-title-with-icon">
+				<HugeiconsIcon
+					:icon = "ConnectIcon"
+					width = "22"
+					height = "22"
+					aria-hidden = "true"
+				/>
+				{{ connectionId }}
+			</span>
+		</template>
+		<div v-if = "configError" class = "list-banner-pad">
+			<NotificationBlock type = "critical" role = "alert" :message = "configErrorMessage" />
 		</div>
 
-		<p v-else-if = "loadError" class = "inline-notification">{{ loadError }}</p>
+		<NotificationBlock v-else-if = "loadError" type = "critical" role = "alert" :message = "loadError" />
 
-		<p v-else-if = "notFound" class = "inline-notification">{{ notFound }}</p>
+		<NotificationBlock v-else-if = "notFound" type = "warning" role = "alert" :message = "notFound" />
 
-		<table v-else-if = "connection" class = "hover datatable">
-			<tbody>
-				<tr v-for = "row in detailRows" :key = "row.label">
-					<th class = "uneditable">{{ row.label }}</th>
-					<td :class = "row.health ? healthClass(connection) : null">{{ row.value }}</td>
-				</tr>
-			</tbody>
-		</table>
+		<dl v-else-if = "connection">
+			<template v-for = "row in detailRows" :key = "row.label">
+				<dt>{{ row.label }}</dt>
+				<dd v-if = "row.health">
+					<span class = "tag" :class = "connectionHealthTagClass(connection)">{{ connectionHealthStatusLabel(connection) }}</span>
+					<span v-if = "connectionHealthMessage(connection)" class = "subtle connection-health-message">{{ connectionHealthMessage(connection) }}</span>
+				</dd>
+				<dd v-else>{{ row.value }}</dd>
+			</template>
+		</dl>
 	</Section>
 </template>
 
 <script setup>
 	import { computed, onMounted, ref, watch } from 'vue'
 	import { useRoute } from 'vue-router'
+	import { HugeiconsIcon } from '@hugeicons/vue'
+	import { ConnectIcon } from '@hugeicons/core-free-icons'
 	import Section from 'picocrank/vue/components/Section.vue'
+	import NotificationBlock from 'picocrank/vue/components/NotificationBlock.vue'
 	import { getApiClient } from '../api-client.js'
 	import {
 		connectionBasicRows,
-		connectionHealthClass,
+		connectionHealthMessage,
+		connectionHealthStatusLabel,
+		connectionHealthTagClass,
 	} from '../connection-format.js'
 
 	const route = useRoute()
@@ -43,9 +59,10 @@
 		connection.value ? connectionBasicRows(connection.value) : []
 	))
 
-	function healthClass (conn) {
-		return connectionHealthClass(conn)
-	}
+	const configErrorMessage = computed(() => {
+		const prefix = configPath.value ? ` from ${configPath.value}` : ''
+		return `Could not load config${prefix}: ${configError.value}`
+	})
 
 	async function loadConnection () {
 		connection.value = null
@@ -74,3 +91,9 @@
 	onMounted(loadConnection)
 	watch(connectionId, loadConnection)
 </script>
+
+<style scoped>
+.connection-health-message {
+	margin-left: 0.5em;
+}
+</style>

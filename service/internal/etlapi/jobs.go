@@ -26,9 +26,9 @@ func (api *EtlApi) ListJobs() *pb.ListJobsResponse {
 		}
 		eff := cfg.EffectiveConfigForJob(id)
 		summary := &pb.JobSummary{
-			Id:               id,
+			Id:                id,
 			ExtractConnection: cfg.ExtractConnectionName(id),
-			LoadConnection:   cfg.LoadConnectionName(id),
+			LoadConnection:    cfg.LoadConnectionName(id),
 		}
 		if eff != nil && eff.Extract != nil {
 			summary.ImportDirectory = eff.Extract.ImportDirectory

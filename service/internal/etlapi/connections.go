@@ -7,9 +7,9 @@ import (
 	"os"
 	"time"
 
+	_ "github.com/go-sql-driver/mysql"
 	pb "github.com/jamesread/data-cleaner/gen/data_cleaner/api/v1"
 	"github.com/jamesread/data-cleaner/internal/config"
-	_ "github.com/go-sql-driver/mysql"
 )
 
 func (api *EtlApi) ListConnections() *pb.ListConnectionsResponse {

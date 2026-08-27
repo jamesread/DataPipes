@@ -6,4 +6,7 @@ deps:
 prod:
 	npx vite build --emptyOutDir
 
-.PHONY: deps
+run:
+	npx vite
+
+.PHONY: deps prod run

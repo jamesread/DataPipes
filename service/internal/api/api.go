@@ -6,11 +6,11 @@ import (
 	"net/http"
 	"strings"
 
+	"connectrpc.com/connect"
 	pb "github.com/jamesread/data-cleaner/gen/data_cleaner/api/v1"
 	dcapiv1connect "github.com/jamesread/data-cleaner/gen/data_cleaner/api/v1/dcapiv1connect"
-	etlapi "github.com/jamesread/data-cleaner/internal/etlapi"
 	"github.com/jamesread/data-cleaner/internal/config"
-	"connectrpc.com/connect"
+	etlapi "github.com/jamesread/data-cleaner/internal/etlapi"
 )
 
 type Server struct {
@@ -55,6 +55,11 @@ func (s *Server) Preview(ctx context.Context, in *connect.Request[pb.PreviewRequ
 
 func (s *Server) FullRun(ctx context.Context, in *connect.Request[pb.FullRunRequest]) (*connect.Response[pb.FullRunResponse], error) {
 	res := s.etl.FullRun(in.Msg.JobId)
+	return connect.NewResponse(res), nil
+}
+
+func (s *Server) ListJobExecutions(ctx context.Context, in *connect.Request[pb.ListJobExecutionsRequest]) (*connect.Response[pb.ListJobExecutionsResponse], error) {
+	res := s.etl.ListJobExecutions(in.Msg.JobId)
 	return connect.NewResponse(res), nil
 }
 

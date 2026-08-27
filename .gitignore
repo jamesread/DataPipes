@@ -1,4 +1,9 @@
 **/*.swp
 **/*.swo
 tmp/
+service/DataPipes
 service/DataCleaner
+frontend/dist/
+frontend/node_modules/
+executions.json
+**/.datapipes/executions.json

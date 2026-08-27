@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"strings"
 
+	_ "github.com/go-sql-driver/mysql" // MySQL driver
 	pb "github.com/jamesread/data-cleaner/gen/data_cleaner/api/v1"
 	"github.com/jamesread/data-cleaner/internal/config"
-	_ "github.com/go-sql-driver/mysql" // MySQL driver
 	log "github.com/sirupsen/logrus"
 )
 

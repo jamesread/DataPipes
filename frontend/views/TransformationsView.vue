@@ -1,26 +1,66 @@
 <template>
-	<Section title = "Transformations" subtitle = "Supported job transform steps">
-		<p class = "subtle">
-			Configure transformations under <code>jobs.&lt;name&gt;.transform</code> in the config file.
-		</p>
+	<Section
+		subtitle = "Supported job transform steps"
+		:padding = "false"
+	>
+		<template #title>
+			<span class = "section-title-with-icon">
+				<HugeiconsIcon
+					:icon = "ShuffleIcon"
+					width = "22"
+					height = "22"
+					aria-hidden = "true"
+				/>
+				Transformations
+			</span>
+		</template>
 
-		<p v-if = "loadError" class = "inline-notification">{{ loadError }}</p>
+		<NotificationBlock v-if = "loadError" type = "critical" role = "alert" :message = "loadError" class = "list-banner-pad" />
 
-		<article v-for = "t in types" :key = "t.id" class = "transformation-type">
-			<h3>{{ t.name }}</h3>
-			<p>{{ t.description }}</p>
-			<pre class = "yaml-example"><code>{{ t.yamlExample }}</code></pre>
-		</article>
+		<NotificationBlock
+			v-else-if = "!sortedTypes.length"
+			type = "note"
+			message = "No transformation types available."
+			class = "list-banner-pad"
+		/>
+
+		<Tabs
+			v-else
+			:tabs = "transformationTabs"
+			orientation = "vertical"
+			:padding = "true"
+			:default-tab = "transformationTabs[0]?.id"
+		>
+			<template v-for = "t in sortedTypes" :key = "t.id" #[`tab-${t.id}`]>
+				<p>{{ t.description }}</p>
+				<pre class = "yaml-example"><code>{{ t.yamlExample }}</code></pre>
+			</template>
+		</Tabs>
 	</Section>
 </template>
 
 <script setup>
-	import { onMounted, ref } from 'vue'
+	import { computed, onMounted, ref } from 'vue'
+	import { HugeiconsIcon } from '@hugeicons/vue'
+	import { ShuffleIcon } from '@hugeicons/core-free-icons'
 	import Section from 'picocrank/vue/components/Section.vue'
+	import Tabs from 'picocrank/vue/components/Tabs.vue'
+	import NotificationBlock from 'picocrank/vue/components/NotificationBlock.vue'
 	import { getApiClient } from '../api-client.js'
 
 	const types = ref([])
 	const loadError = ref('')
+
+	const sortedTypes = computed(() => (
+		[...types.value].sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }))
+	))
+
+	const transformationTabs = computed(() => (
+		sortedTypes.value.map((t) => ({
+			id: t.id,
+			label: t.name,
+		}))
+	))
 
 	onMounted(async () => {
 		try {
@@ -33,18 +73,6 @@
 </script>
 
 <style scoped>
-.transformation-type {
-	margin-top: 1.5rem;
-}
-
-.transformation-type h3 {
-	margin: 0 0 0.5rem;
-}
-
-.transformation-type p {
-	margin: 0 0 0.75rem;
-}
-
 .yaml-example {
 	margin: 0;
 	padding: 1rem;

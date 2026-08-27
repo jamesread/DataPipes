@@ -1,5 +1,9 @@
 package api
 
+import (
+	"github.com/jamesread/data-cleaner/internal/history"
+)
+
 type jobState struct {
 	globalIndex int
 	columnOrder []string
@@ -8,12 +12,14 @@ type jobState struct {
 }
 
 type EtlApi struct {
-	jobs map[string]*jobState
+	jobs    map[string]*jobState
+	history *history.Store
 }
 
 func NewEtlApi() *EtlApi {
 	return &EtlApi{
-		jobs: make(map[string]*jobState),
+		jobs:    make(map[string]*jobState),
+		history: history.NewStore(),
 	}
 }
 

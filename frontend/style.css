@@ -1,16 +1,28 @@
 @import 'picocrank/styles.css';
 
-.job-section + .job-section {
+.job-detail-section + .job-detail-section {
 	margin-top: 1.5rem;
 }
 
-.config-error {
+.job-history-section {
+	margin-top: 1.5rem;
+}
+
+.list-banner-pad {
+	padding-left: 1em;
+	padding-right: 1em;
+}
+
+.section-title-with-icon {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.45em;
+	vertical-align: middle;
+}
+
+.list-table-wrap {
+	margin-top: 0.5rem;
 	margin-bottom: 1.5rem;
-	padding: 1rem 1.25rem;
-	border: 1px solid #c0392b;
-	border-radius: 0.5rem;
-	background: #fdecea;
-	color: #922b21;
 }
 
 .karma-good {

@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"fmt"
+	"time"
 
 	pb "github.com/jamesread/data-cleaner/gen/data_cleaner/api/v1"
 	"github.com/jamesread/data-cleaner/internal/config"
@@ -10,6 +11,7 @@ import (
 )
 
 func (api *EtlApi) FullRun(jobID string) *pb.FullRunResponse {
+	started := time.Now()
 	if jobID == "" {
 		jobID = config.DefaultJobID
 	}
@@ -23,10 +25,12 @@ func (api *EtlApi) FullRun(jobID string) *pb.FullRunResponse {
 	rootCfg := config.GetConfig()
 	jobCfg := rootCfg.EffectiveConfigForJob(jobID)
 	if jobCfg == nil || jobCfg.Load == nil || jobCfg.Load.Destination == "" {
+		api.recordPipelineExecution(jobID, started, res)
 		return res
 	}
 	if len(preview.Issues) > 0 {
 		res.LoadError = "Load skipped: resolve preview issues first"
+		api.recordPipelineExecution(jobID, started, res)
 		return res
 	}
 
@@ -35,14 +39,17 @@ func (api *EtlApi) FullRun(jobID string) *pb.FullRunResponse {
 	if err != nil {
 		res.LoadError = err.Error()
 		log.Errorf("Full run load failed for job %q: %v", jobID, err)
+		api.recordPipelineExecution(jobID, started, res)
 		return res
 	}
 	if failed > 0 {
 		res.LoadError = pbProgressSummary(succeeded, failed)
+		api.recordPipelineExecution(jobID, started, res)
 		return res
 	}
 
 	res.LoadSucceeded = true
+	api.recordPipelineExecution(jobID, started, res)
 	return res
 }
 

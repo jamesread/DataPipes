@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"fmt"
+	"time"
 
 	pb "github.com/jamesread/data-cleaner/gen/data_cleaner/api/v1"
 	"github.com/jamesread/data-cleaner/internal/config"
@@ -32,6 +33,7 @@ func loadStatsFromRow(row DataRow, columns []string) []*pb.LoadStat {
 }
 
 func (api *EtlApi) StreamLoad(ctx context.Context, jobID string, send LoadProgressReporter) error {
+	started := time.Now()
 	if send == nil {
 		send = func(*pb.LoadProgress) error { return nil }
 	}
@@ -49,6 +51,7 @@ func (api *EtlApi) StreamLoad(ctx context.Context, jobID string, send LoadProgre
 			Message: err.Error(),
 			Failed:  failed,
 		})
+		api.recordLoadExecution(jobID, started, succeeded, failed, err)
 		return err
 	}
 
@@ -56,6 +59,7 @@ func (api *EtlApi) StreamLoad(ctx context.Context, jobID string, send LoadProgre
 	if failed > 0 {
 		msg = fmt.Sprintf("Load finished: %d succeeded, %d failed", succeeded, failed)
 	}
+	api.recordLoadExecution(jobID, started, succeeded, failed, nil)
 	return send(&pb.LoadProgress{
 		Phase:     "complete",
 		Succeeded: succeeded,
@@ -101,9 +105,9 @@ func (api *EtlApi) loadExtractedWithProgress(ctx context.Context, jobID string, 
 			return 0, 0, errLoadNotConfigured(jobID)
 		}
 		if err := emit(&pb.LoadProgress{
-			Phase:      "started",
-			TotalRows:  1,
-			Message:    "Prepared transformed data for download",
+			Phase:     "started",
+			TotalRows: 1,
+			Message:   "Prepared transformed data for download",
 		}); err != nil {
 			return 0, 0, err
 		}

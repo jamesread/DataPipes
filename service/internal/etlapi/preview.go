@@ -21,17 +21,19 @@ func previewRowLimit(requestLimit int32) int {
 }
 
 func (api *EtlApi) Preview(jobID string, requestLimit int32, stepOrdinal int32) *pb.PreviewResponse {
+	started := time.Now()
 	limit := previewRowLimit(requestLimit)
 	res := api.extractJob(jobID, limit, stepOrdinal)
 	res.RowLimit = int32(limit)
-	if stepOrdinal > 0 {
+	if stepOrdinal != 0 {
 		res.AppliedStepOrdinal = stepOrdinal
 	}
+	api.recordPreviewExecution(jobID, stepOrdinal, started, res)
 	return res
 }
 
 // extractJob reads CSV extract data into job state. maxRows 0 means no limit.
-// stepOrdinal 0 runs all configured transformation phases.
+// stepOrdinal 0 runs all configured transformation phases; -1 runs extract only.
 func (api *EtlApi) extractJob(jobID string, maxRows int, stepOrdinal int32) *pb.PreviewResponse {
 	if jobID == "" {
 		jobID = config.DefaultJobID

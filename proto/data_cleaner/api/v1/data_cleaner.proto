@@ -64,6 +64,7 @@ message PreviewRequest {
   // Max CSV rows to extract for preview. Default 10 when unset or zero.
   int32 row_limit = 2;
   // Run transformations through this ordinal (inclusive). Zero means all steps.
+  // -1 means extract only (no transformations).
   int32 step_ordinal = 3;
 }
 
@@ -200,6 +201,29 @@ message FullRunResponse {
   string load_error = 4;
 }
 
+message ListJobExecutionsRequest {
+  string job_id = 1;
+}
+
+message JobExecution {
+  string id = 1;
+  string job_id = 2;
+  string started_at = 3;
+  string completed_at = 4;
+  // extract | preview | step | pipeline | load
+  string run_kind = 5;
+  string step_detail = 6;
+  bool success = 7;
+  string message = 8;
+  string triggered_by = 9;
+}
+
+message ListJobExecutionsResponse {
+  repeated JobExecution executions = 1;
+  string config_path = 2;
+  string config_error = 3;
+}
+
 message ListTransformationTypesRequest {
 }
 
@@ -238,6 +262,8 @@ service DataCleanerService {
 	rpc Preview(PreviewRequest) returns (PreviewResponse) {}
 
 	rpc FullRun(FullRunRequest) returns (FullRunResponse) {}
+
+	rpc ListJobExecutions(ListJobExecutionsRequest) returns (ListJobExecutionsResponse) {}
 
 	rpc Import(ImportRequest) returns (ImportResponse) {}
 

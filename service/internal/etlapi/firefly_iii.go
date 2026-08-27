@@ -37,10 +37,10 @@ type fireflyTransaction struct {
 }
 
 type fireflyCreateRequest struct {
-	ApplyRules             bool                 `json:"apply_rules"`
-	FireWebhooks           bool                 `json:"fire_webhooks"`
-	ErrorIfDuplicateHash   bool                 `json:"error_if_duplicate_hash"`
-	Transactions           []fireflyTransaction `json:"transactions"`
+	ApplyRules           bool                 `json:"apply_rules"`
+	FireWebhooks         bool                 `json:"fire_webhooks"`
+	ErrorIfDuplicateHash bool                 `json:"error_if_duplicate_hash"`
+	Transactions         []fireflyTransaction `json:"transactions"`
 }
 
 func NewFireflyIIIConnector(conn *config.Connection) *FireflyIIIConnector {

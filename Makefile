@@ -11,4 +11,16 @@ protocol:
 frontend:
 	$(MAKE) -wC frontend
 
-.PHONY: service protocol frontend
+test:
+	$(MAKE) -wC service test
+
+lint:
+	$(MAKE) -wC service lint
+
+run:
+	$(MAKE) -wC service run
+
+dev-frontend:
+	$(MAKE) -wC frontend run
+
+.PHONY: service protocol frontend test lint run dev-frontend

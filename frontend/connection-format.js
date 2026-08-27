@@ -5,6 +5,21 @@ export function connectionHealthClass (conn) {
   return 'karma-bad'
 }
 
+export function connectionHealthTagClass (conn) {
+  if (conn?.healthOk) {
+    return 'good'
+  }
+  return 'bad'
+}
+
+export function connectionHealthStatusLabel (conn) {
+  return conn?.healthOk ? 'Healthy' : 'Unhealthy'
+}
+
+export function connectionHealthMessage (conn) {
+  return conn?.healthMessage?.trim() || ''
+}
+
 export function formatConnectionDetails (conn) {
   if (conn.type === 'csv') {
     return conn.importDirectory || '—'

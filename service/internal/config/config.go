@@ -18,7 +18,7 @@ var sampleConfigYAML []byte
 const sampleConfigPathLabel = "sample-config.yaml (built-in)"
 
 const (
-	DefaultJobID       = "default"
+	DefaultJobID              = "default"
 	ConnectionTypeCSV         = "csv"
 	ConnectionTypeMySQL       = "mysql"
 	ConnectionTypeDownloadCSV = "download_csv"
@@ -43,14 +43,14 @@ type Connection struct {
 	Table    string `yaml:"table,omitempty"`
 	Truncate bool   `yaml:"truncate,omitempty"`
 
-	URL             string            `yaml:"url,omitempty"`
-	Token           string            `yaml:"token,omitempty"`
-	SourceAccount   string            `yaml:"source_account,omitempty"`
-	TransactionType string            `yaml:"transaction_type,omitempty"` // pipeline column name for type hints (e.g. TFR → transfer)
-	ApplyRules              *bool             `yaml:"apply_rules,omitempty"`
-	LoadColumns             FireflyColumnMap  `yaml:"load_columns,omitempty"`
-	DefaultExpenseAccount   string            `yaml:"default_expense_account,omitempty"`
-	DefaultTransferAccount  string            `yaml:"default_transfer_account,omitempty"`
+	URL                    string           `yaml:"url,omitempty"`
+	Token                  string           `yaml:"token,omitempty"`
+	SourceAccount          string           `yaml:"source_account,omitempty"`
+	TransactionType        string           `yaml:"transaction_type,omitempty"` // pipeline column name for type hints (e.g. TFR → transfer)
+	ApplyRules             *bool            `yaml:"apply_rules,omitempty"`
+	LoadColumns            FireflyColumnMap `yaml:"load_columns,omitempty"`
+	DefaultExpenseAccount  string           `yaml:"default_expense_account,omitempty"`
+	DefaultTransferAccount string           `yaml:"default_transfer_account,omitempty"`
 }
 
 func (c *Connection) Properties() map[string]string {
@@ -103,8 +103,8 @@ func (c *Connection) AsExtractConfig() *ExtractConfig {
 
 // JobConfig selects extract and load connections and defines per-job transform + column mapping.
 type JobConfig struct {
-	Extract   string           `yaml:"extract"`
-	Load      string           `yaml:"load"`
+	Extract   string            `yaml:"extract"`
+	Load      string            `yaml:"load"`
 	Transform TransformPipeline `yaml:"transform,omitempty"`
 }
 
@@ -167,7 +167,6 @@ func (c *RollingTotalConfig) ToleranceOrDefault() float64 {
 	}
 	return 0.001
 }
-
 
 type CsvConfig struct {
 	Header bool

@@ -144,7 +144,10 @@ func (c *Config) TransformSteps() TransformPipeline {
 }
 
 func StepsThroughOrdinal(steps TransformPipeline, throughOrdinal int32) TransformPipeline {
-	if throughOrdinal <= 0 || int(throughOrdinal) >= len(steps) {
+	if throughOrdinal < 0 {
+		return nil
+	}
+	if throughOrdinal == 0 || int(throughOrdinal) >= len(steps) {
 		return steps
 	}
 	return steps[:throughOrdinal]

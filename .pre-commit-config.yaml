@@ -7,3 +7,10 @@ repos:
     -   id: trailing-whitespace
     -   id: end-of-file-fixer
     -   id: check-yaml
+
+-   repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v3.4.0
+    hooks:
+    -   id: conventional-pre-commit
+        stages: [commit-msg]
+        args: []

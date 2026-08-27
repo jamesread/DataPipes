@@ -79,7 +79,7 @@ func appendOutputColumnsSnapshot(res *pb.PreviewResponse, columns []string, step
 }
 
 func appendPreviewRows(res *pb.PreviewResponse, cfg *config.Config, rows []Row, columnOrder []string, dateLayouts map[string]string, maxRows int, stepOrdinal int32) {
-	if len(rows) == 0 {
+	if stepOrdinal < 0 || len(rows) == 0 {
 		return
 	}
 	displayLimit := DefaultPreviewRowLimit
