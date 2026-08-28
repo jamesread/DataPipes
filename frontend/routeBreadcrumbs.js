@@ -30,3 +30,14 @@ export function connectionDetailBreadcrumbs (route) {
 export function transformationsBreadcrumbs () {
 	return () => [routeCrumb('transformations', 'Transformations')]
 }
+
+export function controlPanelBreadcrumbs () {
+	return () => [routeCrumb('controlPanel', 'Control Panel')]
+}
+
+export function diagnosticsBreadcrumbs () {
+	return () => [
+		routeCrumb('controlPanel', 'Control Panel'),
+		routeCrumb('diagnostics', 'Diagnostics'),
+	]
+}

@@ -7,6 +7,7 @@
 				:sidebar-enabled = "false"
 				:top-bar-enabled = "true"
 				:theme-toggle-enabled = "true"
+				:breadcrumbs = "false"
 				:navigation = "navigation"
 				:top-bar-navigation = "topBarNavigation"
 				@logo-click = "goHome"
@@ -53,6 +54,8 @@
 	import Navigation from 'picocrank/vue/components/Navigation.vue'
 	import NotificationBlock from 'picocrank/vue/components/NotificationBlock.vue'
 	import { getApiClient, formatRpcError } from './api-client.js'
+	import { canAccessControlPanelFromStatus, currentStatus } from './rbacAccess.js'
+	import { setupSidebarNavigation } from './sidebarNavigation.js'
 	import logoUrl from './logo.png'
 
 	const router = useRouter()
@@ -69,8 +72,6 @@
 	const initErrorMessage = computed(() => `Could not reach server: ${initError.value}`)
 
 	onMounted(async () => {
-		setupNavigation()
-
 		try {
 			const res = await getApiClient().init({})
 			version.value = res.version
@@ -82,18 +83,17 @@
 			initError.value = formatRpcError(err)
 		} finally {
 			initReady.value = true
+			setupNavigation()
 		}
 	})
 
 	function setupNavigation () {
+		const showControlPanel = canAccessControlPanelFromStatus(currentStatus())
 		for (const nav of [topBarNavigation.value, navigation.value]) {
 			if (!nav) {
 				continue
 			}
-			nav.clearNavigationLinks()
-			nav.addRouterLink('home')
-			nav.addRouterLink('connections')
-			nav.addRouterLink('transformations')
+			setupSidebarNavigation(nav, { showControlPanel })
 		}
 	}
 

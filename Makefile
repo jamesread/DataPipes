@@ -13,6 +13,7 @@ frontend:
 
 test:
 	$(MAKE) -wC service test
+	$(MAKE) -wC frontend test
 
 lint:
 	$(MAKE) -wC service lint

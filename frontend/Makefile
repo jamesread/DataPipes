@@ -9,4 +9,7 @@ prod:
 run:
 	npx vite
 
-.PHONY: deps prod run
+test:
+	node --test rbacAccess.test.js
+
+.PHONY: deps prod run test
