@@ -12,6 +12,8 @@ import (
 func findWebuiDir() string {
 	directoriesToSearch := []string{
 		"../frontend/dist/",
+		"webui/",
+		"/app/webui/",
 		"/app/frontend/dist/",
 	}
 
