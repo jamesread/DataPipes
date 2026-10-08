@@ -58,6 +58,9 @@ jobs:
       - name: Test build
         run: make -w service
 
+      - name: Install Syft
+        uses: anchore/sbom-action/download-syft@v0
+
       - name: Install goreleaser
         uses: goreleaser/goreleaser-action@v6
         with:
